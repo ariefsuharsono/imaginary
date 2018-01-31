@@ -34,6 +34,8 @@ type ServerOptions struct {
 	PlaceholderImage  []byte
 	Endpoints         Endpoints
 	AlloweOrigins     []*url.URL
+
+	BaseURL           string
 }
 
 // Endpoints represents a list of endpoint names to disable.
@@ -102,6 +104,9 @@ func NewServerMux(o ServerOptions) http.Handler {
 	mux.Handle(join(o, "/info"), image(Info))
 	mux.Handle(join(o, "/blur"), image(GaussianBlur))
 	mux.Handle(join(o, "/pipeline"), image(Pipeline))
+
+	// custom method
+	mux.Handle(join(o, "/custom-process"), image(Convert))
 
 	return mux
 }

@@ -45,6 +45,9 @@ var (
 	aBurst             = flag.Int("burst", 100, "Throttle burst max cache size")
 	aMRelease          = flag.Int("mrelease", 30, "OS memory release interval in seconds")
 	aCpus              = flag.Int("cpus", runtime.GOMAXPROCS(-1), "Number of cpu cores to use")
+	
+	//custom
+	aBaseURL           = flag.String("BaseURL", "", "Base URL")
 )
 
 const usage = `imaginary %s
@@ -95,6 +98,7 @@ Options:
 `
 
 func main() {
+	fmt.Println("Starting image processing server")
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, fmt.Sprintf(usage, Version, runtime.NumCPU()))
 	}
@@ -132,6 +136,9 @@ func main() {
 		Authorization:     *aAuthorization,
 		AlloweOrigins:     parseOrigins(*aAlloweOrigins),
 		MaxAllowedSize:    *aMaxAllowedSize,
+
+		//custom
+		BaseURL:           *aBaseURL,
 	}
 
 	// Show warning if gzip flag is passed
