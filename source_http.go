@@ -22,8 +22,8 @@ func (s *HttpImageSource) Matches(r *http.Request) bool {
 	return r.Method == "GET" && r.URL.Query().Get("url") != ""
 }
 
-func (s *HttpImageSource) GetImage(req *http.Request) ([]byte, error) {
-	url, err := parseURL(req)
+func (s *HttpImageSource) GetImage(req *http.Request, o ServerOptions) ([]byte, error) {
+	url, err := parseURL(req, o)
 	if err != nil {
 		return nil, ErrInvalidImageURL
 	}
@@ -84,8 +84,11 @@ func (s *HttpImageSource) setAuthorizationHeader(req *http.Request, ireq *http.R
 	}
 }
 
-func parseURL(request *http.Request) (*url.URL, error) {
+func parseURL(request *http.Request, o ServerOptions) (*url.URL, error) {
 	queryUrl := request.URL.Query().Get("url")
+	if o.BaseURL != "" {
+		queryUrl = o.BaseURL + queryUrl
+	}
 	return url.Parse(queryUrl)
 }
 
