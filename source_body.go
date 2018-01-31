@@ -23,7 +23,7 @@ func (s *BodyImageSource) Matches(r *http.Request) bool {
 	return r.Method == "POST" || r.Method == "PUT"
 }
 
-func (s *BodyImageSource) GetImage(r *http.Request) ([]byte, error) {
+func (s *BodyImageSource) GetImage(r *http.Request, o ServerOptions) ([]byte, error) {
 	if isFormBody(r) {
 		return readFormBody(r)
 	}
