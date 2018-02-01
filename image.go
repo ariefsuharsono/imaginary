@@ -320,6 +320,18 @@ func Pipeline(buf []byte, o ImageOptions) (Image, error) {
 	return image, err
 }
 
+func CustomProcess(buf []byte, o ImageOptions) (Image, error) {
+        if o.Type == "" {
+                return Image{}, NewError("Missing required param: type", BadRequest)
+        }
+        if ImageType(o.Type) == bimg.UNKNOWN {
+                return Image{}, NewError("Invalid image type: "+o.Type, BadRequest)
+        }
+        opts := BimgOptions(o)
+
+        return Process(buf, opts)
+}
+
 func Process(buf []byte, opts bimg.Options) (out Image, err error) {
 	defer func() {
 		if r := recover(); r != nil {

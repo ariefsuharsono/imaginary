@@ -82,12 +82,16 @@ func join(o ServerOptions, route string) string {
 // NewServerMux creates a new HTTP server route multiplexer.
 func NewServerMux(o ServerOptions) http.Handler {
 	mux := http.NewServeMux()
+        image := ImageMiddleware(o)
+	customImage := CustomImageMiddleware(o)
+	// this custom method
+	mux.Handle(join(o, "/"), customImage(CustomProcess))
+	mux.Handle(join(o, "/custom"), customImage(CustomProcess))
 
-	mux.Handle(join(o, "/"), Middleware(indexController, o))
+	mux.Handle(join(o, "/server-info"), Middleware(indexController, o))
 	mux.Handle(join(o, "/form"), Middleware(formController, o))
 	mux.Handle(join(o, "/health"), Middleware(healthController, o))
 
-	image := ImageMiddleware(o)
 	mux.Handle(join(o, "/resize"), image(Resize))
 	mux.Handle(join(o, "/fit"), image(Fit))
 	mux.Handle(join(o, "/enlarge"), image(Enlarge))
@@ -104,9 +108,6 @@ func NewServerMux(o ServerOptions) http.Handler {
 	mux.Handle(join(o, "/info"), image(Info))
 	mux.Handle(join(o, "/blur"), image(GaussianBlur))
 	mux.Handle(join(o, "/pipeline"), image(Pipeline))
-
-	// custom method
-	mux.Handle(join(o, "/custom-process"), image(Convert))
 
 	return mux
 }

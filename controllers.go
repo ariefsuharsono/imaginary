@@ -13,7 +13,7 @@ import (
 )
 
 func indexController(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
+	if r.URL.Path != "/server-info" {
 		ErrorReply(r, w, ErrNotFound, ServerOptions{})
 		return
 	}
@@ -52,6 +52,50 @@ func imageController(o ServerOptions, operation Operation) func(http.ResponseWri
 		imageHandler(w, req, buf, operation, o)
 	}
 }
+
+func customImageController(o ServerOptions, operation Operation) func(http.ResponseWriter, *http.Request) {
+        return func(w http.ResponseWriter, req *http.Request) {
+
+                // custom
+                // rewrite body for root request
+                var imgRequest = req.URL.Path
+		imgRequest = imgRequest[1:]
+		splitted := strings.Split(imgRequest, "_")
+
+                if len(splitted) < 4 {
+                        ErrorReply(req, w, ErrMissingImageSource, o)
+                        return
+                }
+
+		imageURL := ""
+		for i := 2; i < len(splitted) - 1; i++ {
+			imageURL = imageURL + splitted[i] + "/"
+		}
+		imageURL = imageURL + splitted[len(splitted) - 1]
+
+		req.URL.RawQuery  = req.URL.RawQuery + "&width=" + splitted[0] + "&quality=" + splitted[1] + "&type=webp" + "&url=" + imageURL
+
+                var imageSource = MatchSource(req)
+                if imageSource == nil {
+                        ErrorReply(req, w, ErrMissingImageSource, o)
+                        return
+                }
+
+                buf, err := imageSource.GetImage(req, o)
+                if err != nil {
+                        ErrorReply(req, w, NewError(err.Error(), BadRequest), o)
+                        return
+                }
+
+                if len(buf) == 0 {
+                        ErrorReply(req, w, ErrEmptyBody, o)
+                        return
+                }
+
+                imageHandler(w, req, buf, operation, o)
+        }
+}
+
 
 func determineAcceptMimeType(accept string) string {
 	for _, v := range strings.Split(accept, ",") {
