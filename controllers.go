@@ -96,6 +96,37 @@ func customImageController(o ServerOptions, operation Operation) func(http.Respo
         }
 }
 
+func customLiteralImageController(o ServerOptions, operation Operation) func(http.ResponseWriter, *http.Request) {
+        return func(w http.ResponseWriter, req *http.Request) {
+
+                // custom
+                // rewrite body for root request
+
+                imageURL := req.URL.Path
+
+                req.URL.RawQuery  = req.URL.RawQuery + "&rotate=1&url=" + imageURL
+
+                var imageSource = MatchSource(req)
+                if imageSource == nil {
+                        ErrorReply(req, w, ErrMissingImageSource, o)
+                        return
+                }
+
+                buf, err := imageSource.GetImage(req, o)
+                if err != nil {
+                        ErrorReply(req, w, NewError(err.Error(), BadRequest), o)
+                        return
+                }
+
+                if len(buf) == 0 {
+                        ErrorReply(req, w, ErrEmptyBody, o)
+                        return
+                }
+
+                imageHandler(w, req, buf, operation, o)
+        }
+}
+
 
 func determineAcceptMimeType(accept string) string {
 	for _, v := range strings.Split(accept, ",") {

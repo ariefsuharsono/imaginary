@@ -84,8 +84,10 @@ func NewServerMux(o ServerOptions) http.Handler {
 	mux := http.NewServeMux()
         image := ImageMiddleware(o)
 	customImage := CustomImageMiddleware(o)
+	customLiteralImage := CustomLiteralImageMiddleware(o)
+
 	// this custom method
-	mux.Handle(join(o, "/"), customImage(CustomProcess))
+	mux.Handle(join(o, "/"), customLiteralImage(CustomProcess))
 	mux.Handle(join(o, "/custom"), customImage(CustomProcess))
 
 	mux.Handle(join(o, "/server-info"), Middleware(indexController, o))

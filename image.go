@@ -321,6 +321,7 @@ func Pipeline(buf []byte, o ImageOptions) (Image, error) {
 }
 
 func CustomProcess(buf []byte, o ImageOptions) (Image, error) {
+/*
         if o.Type == "" {
                 return Image{}, NewError("Missing required param: type", BadRequest)
         }
@@ -329,6 +330,13 @@ func CustomProcess(buf []byte, o ImageOptions) (Image, error) {
         }
         opts := BimgOptions(o)
 
+        return Process(buf, opts)
+*/
+        if o.Rotate == 0 {
+                return Image{}, NewError("Missing required param: rotate", BadRequest)
+        }
+
+        opts := BimgOptions(o)
         return Process(buf, opts)
 }
 

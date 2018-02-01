@@ -46,6 +46,12 @@ func CustomImageMiddleware(o ServerOptions) func(Operation) http.Handler {
         }
 }
 
+func CustomLiteralImageMiddleware(o ServerOptions) func(Operation) http.Handler {
+        return func(fn Operation) http.Handler {
+                return validateImage(Middleware(customLiteralImageController(o, Operation(fn)), o), o)
+        }
+}
+
 func filterEndpoint(next http.Handler, o ServerOptions) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if o.Endpoints.IsValid(r) {
