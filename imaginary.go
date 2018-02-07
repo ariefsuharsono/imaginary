@@ -48,6 +48,7 @@ var (
 	
 	//custom
 	aBaseURL           = flag.String("BaseURL", "", "Base URL")
+	aDefaultImagePath  = flag.String("DefaultImagePath", "", "Default Image Path")
 )
 
 const usage = `imaginary %s
@@ -139,6 +140,7 @@ func main() {
 
 		//custom
 		BaseURL:           *aBaseURL,
+		DefaultImagePath:  *aDefaultImagePath,
 	}
 
 	// Show warning if gzip flag is passed

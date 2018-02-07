@@ -35,7 +35,9 @@ type ServerOptions struct {
 	Endpoints         Endpoints
 	AlloweOrigins     []*url.URL
 
+	// custom
 	BaseURL           string
+	DefaultImagePath  string
 }
 
 // Endpoints represents a list of endpoint names to disable.

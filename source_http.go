@@ -30,10 +30,10 @@ func (s *HttpImageSource) GetImage(req *http.Request, o ServerOptions) ([]byte, 
 	if shouldRestrictOrigin(url, s.Config.AllowedOrigings) {
 		return nil, fmt.Errorf("Not allowed remote URL origin: %s", url.Host)
 	}
-	return s.fetchImage(url, req)
+	return s.fetchImage(url, req, o)
 }
 
-func (s *HttpImageSource) fetchImage(url *url.URL, ireq *http.Request) ([]byte, error) {
+func (s *HttpImageSource) fetchImage(url *url.URL, ireq *http.Request, o ServerOptions) ([]byte, error) {
 	// Check remote image size by fetching HTTP Headers
 	if s.Config.MaxAllowedSize > 0 {
 		req := newHTTPRequest(s, ireq, "HEAD", url)
@@ -51,8 +51,6 @@ func (s *HttpImageSource) fetchImage(url *url.URL, ireq *http.Request) ([]byte, 
 			return nil, fmt.Errorf("Content-Length %d exceeds maximum allowed %d bytes", contentLength, s.Config.MaxAllowedSize)
 		}
 	}
-
-	// Perform the request using the default client
 	req := newHTTPRequest(s, ireq, "GET", url)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -60,7 +58,29 @@ func (s *HttpImageSource) fetchImage(url *url.URL, ireq *http.Request) ([]byte, 
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("Error downloading image: (status=%d) (url=%s)", res.StatusCode, req.URL.String())
+		// handle if requested image not found
+		if (o.DefaultImagePath == "") {
+			// if default image path is not defined, return default error
+			return nil, fmt.Errorf("Error downloading image: (status=%d) (url=%s)", res.StatusCode, req.URL.String())
+		} else {
+			// if default image path is defined, give default image
+			url, err := url.Parse(o.BaseURL + o.DefaultImagePath)
+			if (err != nil) {
+				return nil, fmt.Errorf("Not allowed default image path", err)
+			}
+
+		        req := newHTTPRequest(s, ireq, "GET", url)
+		        res, err := http.DefaultClient.Do(req)
+		        if err != nil {
+		                return nil, fmt.Errorf("Error downloading image: %v", err)
+		        }
+			defer res.Body.Close()
+			        buf, err := ioutil.ReadAll(res.Body)
+		        if err != nil {
+	        	        return nil, fmt.Errorf("Unable to create default image: %s (url=%s)", req.URL.String(), err)
+			}
+			return buf, nil
+		}
 	}
 
 	// Read the body
